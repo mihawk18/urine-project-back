@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model datetimenotification {
+  id                  Int       @id @default(autoincrement())
+  userID              Int
+  NotificationMessage String    @db.VarChar(100)
+  datetime            DateTime  @db.Date
+  user                user      @relation(fields: [userID], references: [id], map: "DateTimeNotification_userID_fkey")
+  history             history[]
+
+  @@index([userID], map: "DateTimeNotification_userID_fkey")
+}
+
+
+
+model history {
+  id                     Int                  @id @default(autoincrement())
+  timestamp              DateTime             @default(now()) @db.Timestamp(6)
+  action                 String
+  description            String?
+  datetimeNotificationID Int
+  userID                 Int
+  datetimenotification   datetimenotification @relation(fields: [datetimeNotificationID], references: [id], map: "History_datetimeNotificationID_fkey")
+  user                   user                 @relation(fields: [userID], references: [id], map: "History_userID_fkey")
+
+  @@index([datetimeNotificationID], map: "History_datetimeNotificationID_fkey")
+  @@index([userID], map: "History_userID_fkey")
+}
+
+model user {
+  id                   Int                    @id @default(autoincrement())
+  username             String
+  password             String
+  email                String?
+  birthdate            DateTime
+  profileImage         String?
+  datetimenotification datetimenotification[]
+  history              history[]
+  
+}
+
